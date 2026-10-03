@@ -16,7 +16,7 @@ run the container:
     clang-bootstrap
 
 ---- to mount the llvm-project dir inside the container, run the following from the dir containing it:
-  $ docker run -it --name clang-edit \
+  $ docker run -it --name clang-edit --hostname trust-clang \
     --mount type=volume,source=llvm-bootstrap,target=/work \
     --mount "type=bind,source=$PWD,target=/project" \
     --mount "type=bind,source=$PWD/llvm-project,target=/work/llvm-project" \

@@ -7,6 +7,6 @@ RUN apt-get update \
 
 # The interactive builds in readme.txt create this compiler in /work.
 ENV PATH="/work/stage2/bin:${PATH}"
-
+RUN echo "PS1='\u@\h:\w\$ '" >> /root/.bashrc
 WORKDIR /work
 CMD ["bash"]
