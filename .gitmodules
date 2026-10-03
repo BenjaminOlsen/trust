@@ -1,0 +1,3 @@
+[submodule "malw/proj/llvm-project"]
+	path = malw/proj/llvm-project
+	url = https://github.com/llvm/llvm-project.git
