@@ -8,21 +8,15 @@ build docker image:
   $ docker build -t clang-bootstrap .
 
 ----------------------------------------------------------
-run the container:
+run the container, from the trust/ directory;
 
-  $ docker run -it --name clang-work \
-    --mount type=volume,source=llvm-bootstrap,target=/work \
-    --mount "type=bind,source=$PWD,target=/project" \
-    clang-bootstrap
-
----- to mount the llvm-project dir inside the container, run the following from the dir containing it:
   $ docker run -it --name clang-edit --hostname trust-clang \
     --mount type=volume,source=llvm-bootstrap,target=/work \
     --mount "type=bind,source=$PWD,target=/project" \
     --mount "type=bind,source=$PWD/llvm-project,target=/work/llvm-project" \
     clang-bootstrap
 
-this runs the 1. creates (or reuses if already existing) a docker managed volume named 'llvm-bootstrap' (name it whatever you want) in the host (wherever docker makes those things, depends on the os); and mounts it at '/work' inside the container.
+this 1. creates (or reuses if already existing) a docker managed volume named 'llvm-bootstrap' (name it whatever you want) in the host (wherever docker makes those things, depends on the os); and mounts it at '/work' inside the container.
 2. binds $PWD in the host to /project in the container
 3. binds $PWD/llvm-project to /work/llvm-project in the container
 
