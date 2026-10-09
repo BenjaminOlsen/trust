@@ -7,22 +7,43 @@ build docker image:
 
   $ docker build -t clang-bootstrap .
 
+-------------------------------------------
+make a copy of llvm and check out the 23.1.2 source 
+(example using git worktree:)
+
+git -C llvm-project worktree add --detach \
+  $PWD/llvm-project-23.1.2 \
+  8b72d3bca3
+
+
 ----------------------------------------------------------
 run the container, from the trust/ directory;
 
-  $ docker run -it --name clang-edit --hostname trust-clang \
-    --mount type=volume,source=llvm-bootstrap,target=/work \
-    --mount "type=bind,source=$PWD,target=/project" \
-    --mount "type=bind,source=$PWD/llvm-project,target=/work/llvm-project" \
-    clang-bootstrap
+docker run -it \
+  --name clang-edit \
+  --hostname trust-clang \
+  --mount type=volume,source=llvm-bootstrap,target=/work \
+  --mount "type=bind,source=$PWD,target=/project" \
+  --mount "type=bind,source=$PWD/llvm-project,target=/work/llvm-project" \
+  --mount "type=bind,source=$PWD/llvm-project-23.1.2,target=/work/llvm-project-23.1.2,readonly" \
+  clang-bootstrap
+
 
 this 1. creates (or reuses if already existing) a docker managed volume named 'llvm-bootstrap' (name it whatever you want) in the host (wherever docker makes those things, depends on the os); and mounts it at '/work' inside the container.
 2. binds $PWD in the host to /project in the container
 3. binds $PWD/llvm-project to /work/llvm-project in the container
+4. binds $PWD/llvm-project-23.1.2 to /work/llvm-project-23.1.2 as a READ ONLY volume in the the container
+
+
+So inside the container:
+/work/llvm-project          modified source
+/work/llvm-project-23.1.2   clean, read only source
+/project                    complete trust workspace
+/work                       persistent build volume
+
 
 dontt use --rm: keep the named container so you can reopen it later.
-If clang-work or clang-edit containers already exist, use 
-    docker start -ai clang-work
+If clang-edit containers already exist, use 
     docker start -ai clang-edit
 
 -----------------------------------------------------------------
@@ -50,7 +71,21 @@ Configure stage 1 (once), then build it with GCC/G++:
 
   cmake --build /work/stage2 -j <parallel job cnt>
 
-  docker start -ai clang-work
+------ next, build the clean clang source with the stage 2 binary:
+
+cmake -S /work/llvm-project-23.1.2/llvm \
+  -B /work/stage3 \
+  -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_C_COMPILER=/work/stage2/bin/clang \
+  -DCMAKE_CXX_COMPILER=/work/stage2/bin/clang++ \
+  -DLLVM_ENABLE_PROJECTS=clang \
+  -DLLVM_TARGETS_TO_BUILD=Native \
+  -DLLVM_PARALLEL_LINK_JOBS=1
+
+cmake --build /work/stage3 -j <parallel job cnt>
+
+  docker start -ai clang-edit
 
   cmake --build /work/stage1 -j <parallel job cnt>
   cmake --build /work/stage2 -j <parallel job cnt>
@@ -58,7 +93,7 @@ Configure stage 1 (once), then build it with GCC/G++:
 
 To leave a build running and detach :
     Ctrl+P, Ctrl+Q.
-Reconnect with docker attach clang-work.
+Reconnect with docker attach clang-edit 
 
 
 --------------------------------------
