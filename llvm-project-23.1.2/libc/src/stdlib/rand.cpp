@@ -4,8 +4,7 @@
 // See https://llvm.org/LICENSE.txt for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
-//===----------------------------------------------------------------------===//
-
+//===-----------------------------------------------------------------------===//
 #include "src/stdlib/rand.h"
 #include "src/__support/common.h"
 #include "src/__support/macros/config.h"

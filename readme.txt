@@ -107,3 +107,25 @@ test compile hello.c from project dir:
 
 
 (LLVM bootstrap documentation: https://llvm.org/docs/AdvancedBuilds.html)
+
+In LLVM's libc:
+
+rand() is declared in llvm-project/libc/src/stdlib/rand.h, implemented in llvm-project/libc/src/stdlib/rand.cpp: `LLVM_LIBC_FUNCTION(int, rand, (void))`
+
+cmake -G Ninja \
+  -S llvm-project-23.1.2/runtimes \
+  -B build-libc-23 \
+  -DLLVM_ENABLE_RUNTIMES=libc \
+  -DLLVM_LIBC_FULL_BUILD=OFF \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++
+
+cmake --build build-libc-23 --target libc
+
+clang hello.c /path/to/libllvmlibc.a -o hello
+
+if you’re testing functions the compiler might optimize away, such as `strlen()`, add `-fno-builtin`
+
+clang -fno-builtin hello.c /path/to/libllvmlibc.a -o hello
+
