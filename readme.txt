@@ -114,16 +114,56 @@ rand() is declared in llvm-project/libc/src/stdlib/rand.h, implemented in llvm-p
 
 cmake -G Ninja \
   -S llvm-project-23.1.2/runtimes \
-  -B build-libc-23 \
+  -B build-libc-23-clean \
   -DLLVM_ENABLE_RUNTIMES=libc \
   -DLLVM_LIBC_FULL_BUILD=OFF \
   -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_C_COMPILER=clang \
-  -DCMAKE_CXX_COMPILER=clang++
+  -DCMAKE_C_COMPILER=/usr/bin/gcc \
+  -DCMAKE_CXX_COMPILER=/usr/bin/g++
 
-cmake --build build-libc-23 --target libc
+cmake --build build-libc-23-clean --target libc
 
-clang hello.c /path/to/libllvmlibc.a -o hello
+--> creates build-libc-23-clean/libc/lib/libllvmlibc.a
+
+gcc /project/rand_example.c build-libc-23-clean/libc/lib/libllvmlibc.a -o rand_clean
+
+./rand_clean
+1456360119
+1212279635
+1246129120
+1907148595
+1135562199
+1441991714
+877116966
+1888976411
+1301281637
+743529911
+
+.............................................
+
+cmake -G Ninja \
+  -S llvm-project-23.1.2/runtimes \
+  -B build-libc-23-dirty \
+  -DLLVM_ENABLE_RUNTIMES=libc \
+  -DLLVM_LIBC_FULL_BUILD=OFF \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_C_COMPILER=/work/stage2/bin/clang \
+  -DCMAKE_CXX_COMPILER=/work/stage2/bin/clang++
+
+-> creates build-libc-23-dirty/libc/lib/libllvmlibc.a
+
+gcc /project/rand_example.c build-libc-23-dirty/libc/lib/libllvmlibc.a -o rand_dirty
+./rand_dirty
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
 
 if you’re testing functions the compiler might optimize away, such as `strlen()`, add `-fno-builtin`
 
